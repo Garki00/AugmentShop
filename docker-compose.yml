@@ -1,0 +1,59 @@
+name: kjds
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: kjds-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: kjds
+      MYSQL_USER: kjds
+      MYSQL_PASSWORD: kjds123456
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"          # 宿主机 3307 -> 容器 3306，避免和本机已有 MySQL 冲突
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot123456"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    container_name: kjds-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: mysql+pymysql://kjds:kjds123456@mysql:3306/kjds?charset=utf8mb4
+      TZ: Asia/Shanghai
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5000:5000"          # 也可直接访问 API /api/health
+    volumes:
+      - ./backend/static:/app/static     # 商品图片与管理后台上传的图片
+      - backend-data:/app/data
+
+  frontend:
+    build: ./frontend
+    container_name: kjds-frontend
+    restart: unless-stopped
+    # 等 backend 的 HEALTHCHECK 通过（gunicorn 就绪）再启动 nginx，避免首次构建期间商店返回 502
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8080:80"            # 商城入口：http://localhost:8080
+    environment:
+      TZ: Asia/Shanghai
+
+volumes:
+  mysql-data:
+  backend-data:
