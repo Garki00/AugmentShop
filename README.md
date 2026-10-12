@@ -1,4 +1,4 @@
-# 环球优选 · 跨境电商商城（演示项目）
+# 环球优选 · 跨境电商商城
 
 一个可以直接 `docker compose up` 跑起来的跨境电商演示站：Flask 提供 API，Vue 3 渲染商城前台与管理后台，
 MySQL 8 存数据，商品详情页右侧挂一个由 **SiliconFlow Qwen 模型** 驱动的 AI 客服。
@@ -68,7 +68,7 @@ cd frontend && npm install && npm run dev          # http://127.0.0.1:5173
 ```bash
 .venv/Scripts/python.exe tests/smoke_test.py                       # API，默认 http://127.0.0.1:5000
 BASE=http://localhost:8080 .venv/Scripts/python.exe tests/smoke_test.py    # 对 docker 部署跑
-.venv/Scripts/python.exe tests/ui_check.py                         # 真实 UI（无头 Chrome 驱动）
+.venv/Scripts/python.exe tests/ui_check.py                         
 UI_BASE=http://localhost:8080 .venv/Scripts/python.exe tests/ui_check.py   # 对 docker 部署跑
 ```
 
@@ -84,15 +84,13 @@ UI_BASE=http://localhost:8080 .venv/Scripts/python.exe tests/ui_check.py   # 对
 `03-detail` 详情页 · `04-detail-chat` AI 客服对话 + 相关商品 · `05-admin` 后台表格 · `06-admin-created`
 新增商品 · `07-admin-after-delete` 删除后。
 
-## 流程演示脚本（答辩/讲解用）
+## 流程演示脚本
 
-`tests/` 里的两个脚本是「断言型」（打勾/报错），`demos/flow_demo.py` 是「叙事型」：按 7 幕推进，
-每幕先说清要证明的需求点，再发真实请求并打印关键字段与耗时，最后给结论汇总。
 
 ```bash
 .venv/Scripts/python.exe demos/flow_demo.py --base http://localhost:8080   # docker 部署
-.venv/Scripts/python.exe demos/flow_demo.py --pause --slow                # 现场讲解节奏
-.venv/Scripts/python.exe demos/flow_demo.py --no-ai                       # 断网兜底（跳过 AI 幕）
+.venv/Scripts/python.exe demos/flow_demo.py --pause --slow                
+.venv/Scripts/python.exe demos/flow_demo.py --no-ai                       # 断网兜底
 .venv/Scripts/python.exe demos/flow_demo.py --save demo_log.txt           # 存一份演示记录
 ```
 
@@ -123,15 +121,5 @@ tests/                   smoke_test.py（API）· ui_check.py（无头浏览器�
 docs/                    API 文档、部署说明、架构与需求对照
 ```
 
-## 说明与取舍
 
-- 这是**展示用**项目：密码用 Werkzeug 哈希存储，但 JWT 密钥、MySQL 口令都写在 `.env` 里；没有做限流、
-  分库分表、CDN、支付与真实订单。按需求“不考虑安全性和服务器压力”。
-- 商品数据来自公开数据集 [DummyJSON](https://dummyjson.com/products)，图片已下载到
-  `backend/static/products/` 本地随项目走，离线也能展示；`image_remote` 保留原始外链。
-- AI 客服链路：**Qwen3-Embedding-8B** 先把 100 件商品向量化并缓存进库，用户提问时用问题向量检索最相似的
-  3 件商品，连同当前商品的名称/价格/简介一起送进 **Qwen2.5-7B-Instruct**；模型不可用时自动降级为
-  “按数据库字段作答”，页面会标注“降级回答”。
-- `docker compose` 里 MySQL 映射到宿主机 **3307**（避免和本机已装的 MySQL 冲突）。
-
-更多细节：[docs/api.md](docs/api.md) · [docs/deploy.md](docs/deploy.md) · [docs/architecture.md](docs/architecture.md) · [QA.md](QA.md)（答辩问答手册：开场陈述、40 个可能被问到的问题与答案、演示脚本）
+更多细节：[docs/api.md](docs/api.md) · [docs/deploy.md](docs/deploy.md) · [docs/architecture.md](docs/architecture.md)
